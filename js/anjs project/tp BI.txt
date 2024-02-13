@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="travelApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary Planner</title>
+    <style>
+        /* Your CSS styles here */
+        body { 
+            font-family: Arial, sans-serif;
+            background-image: url('https://th.bing.com/th/id/R.608ca0d0f9dfdf5201bcfeef4fe4de19?rik=yeoZK49QjCGlCA&riu=http%3a%2f%2fwww.pixelstalk.net%2fwp-content%2fuploads%2f2016%2f08%2fDesktop-Free-Images-Travel.jpg&ehk=OTQWcD9V%2f6UgBGjQtspJ8l3hsdRE2d3z2pRhtiJSvNY%3d&risl=&pid=ImgRaw&r=0.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;  
+            background-size: cover;
+        h1, h2 {
+            text-align: center;
+        }
+        }
+        #itinerary {
+            margin: 50px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 10px;
+            border: 1px solid #6b2e2e;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li.completed {
+            background-color: #f0f0f0;
+        }
+        .activity-buttons {
+            display: flex;
+            align-items: center;
+        }
+        .activity-buttons button {
+            margin-left: 10px;
+        }
+        .activity-image {
+            width: 80px;
+            height: auto;
+            margin-right: 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .modal img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body ng-controller="ItineraryController">
+    <h1>TRAVEL PLANNER</h1>
+    <div id="destination">
+       <h3> <label for="destination-select">Select Destination:</label></h3>
+        <select id="destination-select" ng-model="selectedDestination" ng-change="loadActivities(selectedDestination)">
+            <option value="Paris">Paris</option>
+            <option value="New York">New York</option>
+            <option value="India">India</option>
+            <!-- Add more destination options as needed -->
+        </select>
+    </div>
+    <div id="itinerary">
+        <h2>{{selectedDestination}}</h2>
+        <input type="text" ng-model="searchQuery" placeholder="Search...">
+        <ul>
+            <li ng-repeat="activity in activities | filter:searchQuery | orderBy:orderPredicate">
+                <div>
+                    <img class="activity-image" ng-src="{{activity.imageUrl}}" alt="{{activity.name}}">
+                    <div>
+                        <strong>{{activity.name}}</strong>
+                        <div>{{activity.category}}</div>
+                        <div>{{activity.description}}</div>
+                    </div>
+                </div>
+                <div class="activity-buttons">
+                    <button ng-click="viewPlace(activity)">View Place</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" ng-click="closeModal()">&times;</span>
+            <h2>{{selectedActivity.name}}</h2>
+            <img ng-src="{{selectedActivity.imageUrl}}" alt="{{selectedActivity.name}}">
+            <p>Category: {{selectedActivity.category}}</p>
+            <p>Description: {{selectedActivity.description}}</p>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script>
+        angular.module('travelApp', [])
+            .controller('ItineraryController', function($scope) {
+                $scope.destinations = {
+                    Paris: [
+                        { name: "Eiffel Tower",  description: "Iconic landmark in Paris", imageUrl: "https://th.bing.com/th/id/R.66f87d43ce28c55175dfdcab288920e9?rik=TKMzRxaHg1oZ5w&riu=http%3a%2f%2fwallsdesk.com%2fwp-content%2fuploads%2f2016%2f11%2fEiffel-Tower-Wallpaper.jpg&ehk=UbLhXdx%2bDU91mzFHumcaQXrn34vdbHfegyztooxW9EU%3d&risl=1&pid=ImgRaw&r=0" },
+                        { name: "Louvre Museum",  description: "World's largest art museum", imageUrl: "https://th.bing.com/th/id/R.ac9e679812389a4b4abb15c8cf4705ee?rik=7Gp6HUNIzI7AxA&riu=http%3a%2f%2fmedia.architecturaldigest.com%2fphotos%2f5900cc370638dd3b70018b33%2fmaster%2fpass%2fSecrets+of+Louvre+1.jpg&ehk=hAKFCm8l7I4rrpUDUohq%2bqtJ%2f%2b4bovQlQM2lH3C4fCk%3d&risl=&pid=ImgRaw&r=0" },
+                        { name: "Seine River Cruise",  description: "Enjoy a scenic cruise on the Seine River", imageUrl: "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_863,f_auto/w_80,x_15,y_15,g_south_west,l_klook_water/activities/kgloozjgh5xivtmy4gvi/ParisOpenTourBusPassand1HourSeineRiverCruise.jpg" }
+                    ],
+                    "New York": [
+                        { name: "Statue of Liberty",  description: "Iconic symbol of freedom", imageUrl: "https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77700314916.jpg" },
+                        { name: "Central Park",  description: "Famous urban park", imageUrl: "https://centralparksightseeing.com/wp-content/uploads/2016/09/central-park-fall-1.jpg" },
+                        { name: "Empire State Building",  description: "Historic skyscraper", imageUrl: "https://images.fineartamerica.com/images-medium-large-5/the-empire-state-building-jatinkumar-thakkar.jpg" }
+                    ],
+                    "India": [
+                        { name: "Ayodhya Ram Mandir",  description: "A Hindhu Temple", imageUrl: "https://feeds.abplive.com/onecms/images/uploaded-images/2023/06/12/b484de04b5712db6f66bef9661a36a181686568073084724_original.jpg?impolicy=abp_cdn&imwidth=1200&imheight=628" },
+                        { name: "Kashmir", description: "For its Captivating Natural Beauty", imageUrl: "https://th.bing.com/th/id/OSK.HERO2RZfZNTPFa35zfB7z9iflXdGa2O9qBejW_INGH7Maro?rs=1&pid=ImgDetMain" },
+                        { name: "Kerala",  description: "For its Backwaters, Beaches & Culture", imageUrl: "https://www.nomadicchica.com/en/productive/wp-content/uploads/2020/03/People-in-Kerala-India-Gloria-Apara-Nomadicchica.com_-1280x853.jpg" }
+                    ]
+                };
+                $scope.loadActivities = function(destination) {
+                    $scope.activities = $scope.destinations[destination];
+                };
+                $scope.viewPlace = function(activity) {
+                    $scope.selectedActivity = activity;
+                    var modal = document.getElementById("myModal");
+                    modal.style.display = "block";
+                };
+                $scope.closeModal = function() {
+                    var modal = document.getElementById("myModal");
+                    modal.style.display = "none";
+                };
+                // Load activities for the initial selected destination
+                $scope.loadActivities($scope.selectedDestination);
+            });
+    </script>
+</body>
+</html>
